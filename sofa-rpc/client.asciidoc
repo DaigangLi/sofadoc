@@ -1,0 +1,125 @@
+=== client 包
+
+==== AddressHolder
+服务提供者地址管理器。主要提供了获取服务端实例列表的行为。实现了 `ProviderInfoListener` 接口的抽象类。最终由core-impl包的 `SingleGroupAddressHolder` 实现。
+
+==== AddressHolderFactory
+服务提供者地址管理器工厂。很多类都伴有一个这样类似的工厂类，主要目的是解决类加载和实例化的构建过程。 +
+
+实际功能是根据consumerConfig配置的addressHolder构建AddressHolder实例，并且该实例不是单例。
+
+==== ClientProxyInvoker
+客户端引用代理调用器。实现了 `Invoker` 接口。构建该对象时需要 `ConsumerBootstrap` 实例。 +
+
+`Invoker` 接口实现： +
+1、调整 `RpcInternalContext`。将Context往下放一层（例如服务端B接到A的请求后再作为C的客户端调用，调用前这里就先把放A-B的上下文存起来）。 +
+实际上是将ThreadLocal保存的 `RpcInternalContext` 推到ThreadLocal的队列中，构成顺序链。
+
+2、创建新的 `RpcInternalContext`。如果能在ThreadLocal获取到上下文就直接返回，否则新创建一个上下文。但实际上通过上个步骤，ThreadLocal已经不存在上下文了。
+
+3、执行请求包装。这是一个需要子类实现的方法，当前类为空实现。
+
+4、给事件总线提交一个开始调用事件（`ClientStartInvokeEvent`）。前提是EventBus开启了该事件功能。
+
+5、调用 cluster.invoke(request)方法，得到 `SofaResponse`。
+
+6、如果是同步请求，就给事件总线提交一个调用结束事件（`ClientEndInvokeEvent`）。前提是EventBus开启了该事件功能。
+
+7、执行响应包装。这是一个需要子类实现的方法，当前类为空实现。
+
+8、清理当前上下文。上下文往上取一层（例如服务端B接到A的请求后再作为C的客户端调用，调用完毕后这里就先把放A-B的上下文取起来）。
+
+==== Cluster
+客户端，封装了集群模式、长连接管理、服务路由、负载均衡等抽象类。具体还得看core-impl模块下的实现类（`FailFastCluster`、`FailoverCluster`）。
+
+==== ClusterFactory
+功能同 `AddressHolderFactory`。
+
+==== ConnectionHolder
+连接管理器。这是抽象类主要定义了长连接、存活连接的管理行为。由core-impl模块下的实现类实现（`AllConnectConnectionHolder`、`ElasticConnectionHolder`）。
+
+==== ConnectionHolderFactory
+功能同 `AddressHolderFactory`。
+
+==== Router
+路由器。从一堆Provider中筛选出一堆Provider。这个抽象类定义了一个最重要的行为，就是route动作。由core-impl模块下的实现类实现（`DirectUrlRouter`、`RegistryRouter`）。
+
+==== ExcludeRouter
+要排除的过滤器。-*和 -default表示不加载默认过滤器。
+
+==== RouterChain
+路由器链。
+
+1、加载路由器实例。将标注了@AutoActive注解的路由器实现类找出来，并按照服务提供端和消费端进行分类。
+
+2、构建Router链。步骤： +
+- 根据配置构建用户自定义路由器。 +
+- 判断是否需要排除过滤器。排除规则见 `ExcludeRouter`。 +
+- 通过consumerConfig中路由配置别名列表加载对应的系统路由器实例。 +
+- 整理路由器实例的优先顺序。 +
+
+3、初始化路由器实例，并添加到routers列表。
+
+==== LoadBalancer
+负载均衡器：从一堆Provider列表里选出一个。该抽象类主要行为是select选择服务行为。由core-impl模块下的实现类实现。
+
+.负载均衡实现类列表
+[cols="4,8",align="center",frame="topbot",options="header"]
+|==========================
+|负载均衡实现类|功能说明
+|ConsistentHashLoadBalancer | 一致性hash算法，同样的请求（第一参数）会打到同样的节点
+|LocalPreferenceLoadBalancer | 本机优先的随机算法
+|RandomLoadBalancer | 负载均衡随机算法:全部列表按权重随机选择
+|RoundRobinLoadBalancer | 负载均衡轮询算法，按方法级进行轮询，互不影响
+|WeightConsistentHashLoadBalancer | 加权一致性hash算法
+|WeightRoundRobinLoadBalancer | 加权轮询算法
+|==========================
+
+==== LoadBalancerFactory
+功能同 `AddressHolderFactory`。
+
+==== ProviderGroup
+服务分组。按照一个分组名称（默认分组名称：_DEFAULT），组织一个服务列表。并提供了向这个分组添加和移除服务的方法。
+
+==== ProviderInfo
+服务提供者元数据。
+
+.主要信息
+[cols="4,8",align="center",frame="topbot",options="header"]
+|==========================
+|主要信息|说明
+|originUrl|原始地址
+|protocolType|协议类型，默认：bolt
+|host|IP
+|port|端口，默认：80
+|path|地址
+|serializationType|序列化方式，服务端指定，以服务端的为准
+|rpcVersion|RPC版本
+|weight|权重，默认：100
+|status|服务状态，默认：可用
+|staticAttrs|静态属性
+|dynamicAttrs|动态属性
+|==========================
+
+==== ProviderInfoAttrs
+服务提供者信息的的一些常量属性。
+
+==== ProviderStatus
+服务提供者的状态枚举。
+
+.状态列表
+[cols="4,8",align="center",frame="topbot",options="header"]
+|==========================
+|状态|说明
+|AVAILABLE	|可用
+|DISABLED	|禁用
+|WARMING_UP	|预热中
+|BUSY	|服务器繁忙
+|DEGRADED	|被降级
+|RECOVERING	|恢复中
+|PAUSED	|服务器暂停
+|PRE_CLOSE	|服务端即将关闭
+|==========================
+
+==== ProviderHelper
+工具类，提供了服务提供者列表、分组的比较；将服务提供者元数据信息和URL形式相互转换的功能;

@@ -1,0 +1,9 @@
+=== api包
+
+==== GenericContext
+sofa通用的Context类，只有一个客户端超时时间属性和一个静态的空实现的Context变量。 +
+
+用途：目前没有太多的用途。后续可能弃用，由context包下的类取代。目前只在 `ConsumerGenericFilter`（客户端泛化调用处理filter）中获取SerializeFactoryType时有用。
+
+==== GenericService
+sofa泛化调用接口、目前没有任何实现。主要是为了支持参数类型无法在类加载器加载情况的泛化调用。

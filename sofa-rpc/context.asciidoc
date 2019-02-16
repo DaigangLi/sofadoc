@@ -1,0 +1,47 @@
+=== context 包
+
+==== AsyncRuntime
+异步执行运行时。持有一个ThreadPoolExecutor变量。该ThreadPoolExecutor根据RpcOptions.ASYNC_*配置参数构建而来。用于异步执行rpc调用。
+
+==== RpcInternalContext
+基于ThreadLocal的内部使用的上下文传递。一般存在于：客户端请求线程、服务端业务线程池、客户端异步线程。 +
+- 支持携带上下文附件。 +
+- 支持上下文队列。 +
+- 支持上下文下推个上弹。
+
+==== RpcInvokeContext
+基于ThreadLocal的面向业务开发者使用的上下文传递对象。
+
+==== RpcRunningState
+RPC 框架运行状态。标识RPC处于哪种状态：关闭状态、单元测试状态、debug状态。
+
+==== RpcRuntimeContext
+全局的运行时上下文。包括初始化RPC运行环境和销毁运行环境。
+
+初始化流程： +
+1、设置rpc版本为 `Version.RPC_VERSION`
+
+2、初始化一些上下文。包括：sofa应用Id、应用名称、应用实例Id、当前所在文件夹地址。
+
+3、初始化模块。由ModuleFactory根据配置的模块列表进行加载和初始化。主要模块有： `LookoutModule`、`FaultToleranceModule`、`RestTracerModule`、`SofaTracerModule`。
+
+4、设置Jvm ShutdownHook。主要用于关闭应用前安全销毁运行环境。
+
+销毁流程： +
+1、将 `RpcRunningState` 关闭状态设置为 true。
+
+2、将注册的可关闭资源调用他们的销毁前处理方法进行销毁前处理。
+
+3、将注册的服务提供者从所以得注册中心批量下线。
+
+4、调用 `ServerFactory.destroyAll()` 关闭Server服务。
+
+5、调用 `RegistryFactory.destroyAll()` 关闭服务提供者和调用者、关闭所有注册中心。
+
+6、调用 `ClientTransportFactory.closeAll()` 关闭全部客户端连接。
+
+7、卸载模块。
+
+8、将注册的可关闭资源调用他们的銷毀后处理方法进行銷毀后处理。
+
+9、清理缓存并将 `RpcRunningState` 关闭状态设置为 false。

@@ -1,0 +1,39 @@
+=== event 包
+主要包含Sofa RPC框架的一系列实现了 `Event` 接口的事件类型，可被消息总线识别。
+
+.事件类型
+[align="center",frame="topbot",options="header"]
+|==========================
+|事件类型
+|ClientAfterSendEvent
+|ClientAsyncReceiveEvent
+|ClientBeforeSendEvent
+|ClientEndInvokeEvent
+|ClientStartInvokeEvent
+|ClientSyncReceiveEvent
+|ConsumerSubEvent
+|ProviderInfoAddEvent
+|ProviderInfoRemoveEvent
+|ProviderInfoUpdateAllEvent
+|ProviderInfoUpdateEvent
+|ProviderPubEvent
+|ServerEndHandleEvent
+|ServerReceiveEvent
+|ServerSendEvent
+|ServerStartedEvent
+|ServerStoppedEvent
+|==========================
+
+==== EventBus
+简单实现的消息总线。主要用于sofa内部的事件传输。由配置 `event.bus.enable` 决定是否开启（默认：开启）。
+
+持有一个Map结构存放事件订阅者集合，在Module启动安装时向 `EventBus` 注册事件类型和订阅者。在Module卸载时取消订阅。
+
+最主要的行为是暴露一个事件入口，向消息总线推送事件，由消息总线路由和分发给不同的事件订阅者消费。
+
+这里有几个问题：(但是对于sofa来说，这些事件可能不是特别重要，实现的订阅者消费速率也很快。) +
+1、如果某个事件没有订阅者，则该消息会被丢弃。 +
+2、支持同步和异步的消息派发。异步消息处理是给线程池处理、如果线程池满了，则会抛出 `RejectedExecutionException` +
+
+==== Subscriber
+sofa事件订阅者抽象类。定义了事件同步/异步处理开关，事件处理行为。

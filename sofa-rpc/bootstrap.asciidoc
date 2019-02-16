@@ -1,0 +1,21 @@
+=== bootstrap 包
+
+==== Bootstraps
+只是一个辅助工具类，用于根据配置构建出 `ProviderBootstrap` 和 `ConsumerBootstrap` 实例。
+
+构建 `ProviderBootstrap` 流程： +
+根据 `ProviderConfig` 配置的bootstrap构建ProviderBootstrap。如果没有bootstrap配置，则用默认的bootstrap（默认为：sofa）构建。 +
+
+构建过程： +
+单独的类加载器（ExtensionLoader）根据参数值和参数类型加载并实例化。然后将该实例根据bootstrap字符串缓存起来，构成单例。
+
+构建 `ConsumerBootstrap` 流程： +
+根据 `ConsumerConfig` 配置的bootstrap构建ConsumerBootstrap，构建过程还是同上的类加载器加载。如果没有bootstrap配置，则根据默认协议（默认为：bolt）构建。如果没有找到扩展类的情况下，则根据默认的bootstrap（默认为：sofa）构建。
+
+==== ConsumerBootstrap
+引用服务的包装类，只是一个持有consumerConfig变量，并定义了服务管理的行为的抽象父类。 +
+实现类有： `DefaultConsumerBootstrap`、 `BoltConsumerBootstrap`、`Http2ClearTextConsumerBootstrap`、`RestConsumerBootstrap`
+
+==== ProviderBootstrap
+发布服务的包装类，包括具体的启动后的对象，只是一个持有providerConfig变量，并定义了服务管理的行为的抽象父类。 +
+实现类有：同上对等的ProviderBootstrap。

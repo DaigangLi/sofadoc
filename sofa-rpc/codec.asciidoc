@@ -1,0 +1,18 @@
+=== codec 包
+
+==== Serializer
+序列化器接口。定义了序列话，反序列化接口。不同的是，序列化后的内容是ByteBuf。
+
+==== SerializerFactory
+序列化工厂。加载和缓存序列化器。支持按扩展点别名和扩展点编码组织缓存。
+
+==== AbstractSerializer
+主要定义了序列化过程中的错误类型。主要序列化实现还是要看扩展实现（`JacksonSerializer`、`ProtobufSerializer`、`SofaHessianSerializer`）。
+
+sofa默认使用hessian2序列化器。
+
+==== Compressor
+字节数组压缩和解压接口。主要实现是 `SnappyRpcCompressor`。
+
+==== CompressorFactory
+基本同SerializerFactory。

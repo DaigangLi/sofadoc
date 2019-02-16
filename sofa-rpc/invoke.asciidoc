@@ -1,0 +1,25 @@
+=== invoke 包
+定义了sofa调用服务的接口和服务回调接口。
+
+==== Invoker
+sofa调用服务接口，即调用器。真正调用服务的入口。
+[source,java]
+/**
+ * 执行调用
+ *
+ * @param request 请求
+ * @return SofaResponse 响应
+ * @throws SofaRpcException rpc异常
+ */
+SofaResponse invoke(SofaRequest request) throws SofaRpcException;
+
+==== Callback
+sofa服务回调接口。
+[source,java]
+/**
+ * 回调通知
+ *
+ * @param result 通知对象
+ * @return 返回值对象 s
+ */
+S notify(Q result);

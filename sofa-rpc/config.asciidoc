@@ -1,0 +1,31 @@
+=== config 包
+
+==== AbstractIdConfig
+该抽象类提供了分配配置ID的行为。基本实现是同步加锁后自增ID。
+
+==== AbstractInterfaceConfig
+接口级的公共配置类。
+
+==== ApplicationConfig
+应用信息配置。只包含3个属性：appName、appId、insId。
+
+==== ConfigValueHelper
+配置值检查器。工具类，主要提供配置值字符串合法性检查。
+
+==== ConsumerConfig
+服务消费者配置。配置太多，可查阅。
+
+==== MethodConfig
+方法级配置。主要包含方法名称、参数、调用超时和重试、压缩和客户端缓存等。
+
+==== ParameterConfig
+参数配置。包含关键字、值、是否隐藏标识。
+
+==== ProviderConfig
+服务提供者配置。配置太多，可查阅。
+
+==== RegistryConfig
+注册中心配置。主要包括协议、地址、超时、心跳、重连、自定义参数等。
+
+==== ServerConfig
+服务端配置。配置太多，可查阅。

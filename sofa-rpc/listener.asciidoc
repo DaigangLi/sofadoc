@@ -1,0 +1,14 @@
+=== listener 包
+该包下只是定义了几个监听接口。其实现主要在client端和扩展实现包中实现。
+
+==== ChannelListener
+提供了通道建立连接和断开连接的事件接口。目前尚无实现。
+
+==== ConfigListener
+提供了配置发生变化和属性发生变化的事件接口。目前实现有 `ConsumerAttributeListener`、`ProviderAttributeListener`。
+
+==== ConsumerStateListener
+调用者客户端状态变化监听器。提供了调用者客户端可用和不可用（有可用长连接、无可用长连接）两种状态的事件接口。目前尚无实现。
+
+==== ProviderInfoListener
+提供了添加服务组、删除服务组、更新服务组的事件接口。目前在core的实现包中实现。

@@ -1,0 +1,14 @@
+=== message 包
+
+==== ResponseFuture
+响应Future，可以调用get方法进行获取响应，也可以注入监听器，有结果或者都会通知。
+
+目前实现类都没有支持监听行为。
+
+==== AbstractResponseFuture
+Future的默认实现。主要是实现原理是让线程等待，一直到超时。
+
+主要实现类 `BoltResponseFuture`、`HttpResponseFuture`
+
+==== MessageBuilder
+工具类。主要用于构建 `SofaRequest`。

@@ -1,0 +1,31 @@
+=== common 包
+
+==== Cache
+缓存接口。目前没有实现。
+
+==== ScheduledService
+任务调度服务。无他，就是是封装了 `ScheduledExecutorService`，支持按固定频率执行和固定间隔执行。
+
+==== NetUtils
+网络工具类。主要功能有可用端口探测、ip解析、解析注册中心连接地址、ip白名单等。
+
+==== Version
+Sofa RPC版本。
+
+==== SystemInfo
+系统相关信息。主要区分操作系统类型，本机地址和物理地址。
+
+==== RpcOptions
+Sofa RPC 配置项关键字。内容太多，可供参考。
+
+==== RpcConstants
+Sofa RPC 常量。
+
+==== RpcConfigs
+Sofa RPC 配置解析类。 +
+解析流程： +
+1、解析并加载默认配置文件 `rpc-config-default.json` +
+2、解析并加载自定义配置文件 `sofa-rpc/rpc-config.json`、`META-INF/sofa-rpc/rpc-config.json` +
+3、解析并加载系统配置信息
+
+提供了基本类型数据的获取方法和配置变更的通知接口 `RpcConfigListener`。

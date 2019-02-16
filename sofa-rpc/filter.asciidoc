@@ -1,0 +1,54 @@
+=== filter 包
+
+==== @AutoActive
+自动加载激活的类标识。主要标识实现类功能在服务端开启还是在消费端开启。
+
+==== Filter
+拦截器抽象。主要定义了拦截行为。
+
+==== ExcludeFilter
+要排除的过滤器 -*和 -default表示不加载默认过滤器。
+
+==== FilterInvoker
+拦截器调用器，实现了 `Invoker` 接口。只是提供了一个简单的默认实现，具体还得看 `ConsumerInvoker` 和 `ProviderInvoker`。
+
+==== FilterChain
+拦截器链。
+
+1、加载拦截器实例。将标注了@AutoActive注解的拦截器实现类找出来，并按照服务提供端和消费端进行分类。
+
+2、构建Filter链。步骤： +
+- 根据配置构建用户自定义拦截器。 +
+- 判断是否需要排除拦截器。排除规则见 `ExcludeFilter`。 +
+- 通过AbstractInterfaceConfig中配置别名列表加载对应的系统拦截器实例。 +
+- 整理拦截器实例的优先顺序。 +
+- 将自定义拦截器添加到列表最后面。
+
+3、初始化拦截器链实例，并添加到loadedFilters列表。
+
+==== ConsumerInvoker
+继承了 `FilterInvoker`，执行真正的调用过程，使用client发送数据给server。
+
+调用的时候，先从上下文中找到服务提供者的信息，然后通过 `Cluster` 向远程地址发送消息。
+[source,java]
+// 设置下服务器应用
+ProviderInfo providerInfo = RpcInternalContext.getContext().getProviderInfo();
+String appName = providerInfo.getStaticAttr(ProviderInfoAttrs.ATTR_APP_NAME);
+if (StringUtils.isNotEmpty(appName)) {
+    sofaRequest.setTargetAppName(appName);
+}
+// 目前只是通过client发送给服务端
+return consumerBootstrap.getCluster().sendMsg(providerInfo, sofaRequest);
+
+==== ProviderInvoker
+服务端调用业务实现类。继承了 `FilterInvoker`。
+
+调用实现是通过请求中的方法名反射调用执行。
+[source,java]
+// 反射 真正调用业务代码
+Method method = request.getMethod();
+if (method == null) {
+    throw new SofaRpcException(RpcErrorType.SERVER_FILTER, "Need decode method first!");
+}
+Object result = method.invoke(providerConfig.getRef(), request.getMethodArgs());
+sofaResponse.setAppResponse(result);
